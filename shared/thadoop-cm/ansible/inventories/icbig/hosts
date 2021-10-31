@@ -1,0 +1,13 @@
+icbig-01-[01:03]
+
+[postgres:children]
+postgres-master
+postgres-worker
+pgpool
+
+[postgres-master]
+icbig-01-01
+[postgres-worker]
+icbig-01-[02:03]
+[pgpool]
+icbig-01-[01:03]

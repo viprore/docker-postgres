@@ -1,0 +1,1 @@
+https://www.pgpool.net/docs/42/en/html/example-cluster.html

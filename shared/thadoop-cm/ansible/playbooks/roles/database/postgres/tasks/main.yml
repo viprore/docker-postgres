@@ -1,0 +1,38 @@
+---
+# install postgresql13-server, pgpool for all first
+
+#- name: postgres user set passwd
+#  user:
+#    name: postgres
+#    password: "{{ postgres.password }}"
+#    force: true
+#    state: present
+
+- name: check postgres key
+  stat:
+    path: "/root/.ssh/id_rsa_pgpool"
+  register: file_info
+
+- name: sshpass template
+  when: not file_info.stat.exists
+  template:
+    src: script/set-postgress-pass.sh.j2
+    dest: /tmp/set-postgress-pass.sh
+    mode: 700
+
+- name: execute sh
+  when: not file_info.stat.exists
+  shell: /tmp/set-postgress-pass.sh
+
+- name: set postgresql-13.service PGDATA
+  template:
+    src: daemon/postgresql-13.service.j2
+    dest: /usr/lib/systemd/system/postgresql-13.service
+
+- name: master setting
+  when: inventory_hostname in groups['postgres-master']
+  import_tasks: master.yml
+
+
+
+# /data1/pgsql/13/data 이하 위치함함
