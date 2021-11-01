@@ -23,5 +23,5 @@
     - { name: "primary_slot_name", value: "standby{{ groups['postgres-standby'].index(inventory_hostname)+1 if inventory_hostname in groups['postgres-standby'] else '' }}_slot"}
 
 # ref: https://www.highgo.ca/2021/02/03/how-to-setup-postgres-13-wal-streaming-replication-on-ubuntu-18-04/
-
+# https://www.cybertec-postgresql.com/en/setting-up-postgresql-streaming-replication/
 ...
