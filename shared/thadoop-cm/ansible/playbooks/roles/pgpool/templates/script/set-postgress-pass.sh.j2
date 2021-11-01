@@ -1,0 +1,15 @@
+#! /bin/bash
+
+cd ~/.ssh
+ssh-keygen -t rsa -f id_rsa_pgpool -N ''
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-01
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-02
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-03
+
+sudo -i -u postgres bash << EOF
+cd ~/.ssh
+ssh-keygen -t rsa -f id_rsa_pgpool -N ''
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-01
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-02
+sshpass -p {{ pgpool.password }} ssh-copy-id -i id_rsa_pgpool.pub -o StrictHostKeyChecking=no postgres@icbig-01-03
+EOF

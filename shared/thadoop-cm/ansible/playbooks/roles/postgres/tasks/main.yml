@@ -1,0 +1,5 @@
+---
+# replication
+- name: pgsql setup and replication
+  import_tasks: replication.yml
+

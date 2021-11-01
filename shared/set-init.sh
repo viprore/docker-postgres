@@ -8,3 +8,5 @@ rm -rf /etc/ansible/hosts
 
 ln -fsn /srv/thadoop-cm/ansible/inventories/icbig/hosts /etc/ansible/hosts
 ln -fsn /srv/thadoop-cm/ansible/inventories/icbig/group_vars /etc/ansible/group_vars
+
+cd /srv/thadoop-cm/ansible/playbooks/

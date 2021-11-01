@@ -1,0 +1,29 @@
+---
+# 1) install postgresql13-server
+
+# DATA dir 잡으려고
+- name: set postgresql-13.service PGDATA
+  template:
+    src: daemon/postgresql-13.service.j2
+    dest: /usr/lib/systemd/system/postgresql-13.service
+
+# pgsql_log 생성 : data 디렉토리는 initdb 하면서 만들어짐
+- name: postgresql log 디렉토리 생성
+  file:
+    path: "{{ postgres.dir.log }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "744"
+
+# Primary 세팅
+- name: primary initdb and configuration
+  when: inventory_hostname in groups['postgres-primary']
+  import_tasks: primary.yml
+
+# Standby 세팅
+- name: standby set
+  when: inventory_hostname in groups['postgres-standby']
+  import_tasks: standby.yml
+
+...

@@ -1,8 +1,11 @@
 ---
 postgres:
   dir:
-    log: /var/log/postgres
-    data: /data1/pgsql/13/data
-  ip_mask: 172.29.0.0/24
+    log: /var/log/postgres/
+    data: /data1/pgsql/13/data/
+  ip_mask: 172.18.0.0/24
   max_connection: 3000
+
+
+pgpool:
   password: postgres

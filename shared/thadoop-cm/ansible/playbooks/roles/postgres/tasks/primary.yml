@@ -1,0 +1,29 @@
+---
+
+- name: check data dir and initdb
+  block:
+    - name: data dir check
+      stat:
+        path: "{{ postgres.dir.data }}"
+      register: dir_info
+
+    - name: master init
+      when: not dir_info.stat.exists or dir_info.stat.isblk
+      shell:
+        cmd: /usr/bin/postgresql-13-setup initdb
+
+- name: set postgres
+  template:
+    src: data/{{ item }}.j2
+    dest: "{{ postgres.dir.data }}/{{ item }}"
+  with_items:
+    - pg_hba.conf
+    - postgresql.conf
+
+# standby backup을 위해
+- name: start primary
+  systemd:
+    name: postgresql-13
+    state: started
+
+...

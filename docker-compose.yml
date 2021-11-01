@@ -23,3 +23,7 @@ services:
     hostname: icbig-01-03
     tty: true
     privileged: true
+
+networks:
+  default:
+    name: mhadoop-network

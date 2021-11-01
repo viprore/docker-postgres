@@ -1,0 +1,27 @@
+---
+# postgres user로!!!
+
+- name: check data dir and backup from primary
+  block:
+    - name: data dir check
+      stat:
+        path: "{{ postgres.dir.data }}"
+      register: dir_info
+
+    - name: backup standby
+      when: not dir_info.stat.exists or dir_info.stat.isblk
+      shell:
+        cmd: pg_basebackup --pgdata={{ postgres.dir.data }} --format=p --write-recovery-conf --checkpoint=fast --label=mffb --progress --verbose --host={{ groups['postgres-primary'][0] }} --port=5432 --username=postgres
+
+- name: postgresql.conf configuration
+  lineinfile:
+    dest: "{{ postgres.dir.data }}/postgresql.conf"
+    regexp: '^#(.*{{ item.name }}.*)'
+    line: "{{ item.name }}='{{ item.value }}'"
+  with_items:
+    - { name: "primary_conninfo", value: "host={{ groups['postgres-primary'][0] }} port=5432 user=replication password=replication"}
+    - { name: "primary_slot_name", value: "standby{{ groups['postgres-standby'].index(inventory_hostname)+1 if inventory_hostname in groups['postgres-standby'] else '' }}_slot"}
+
+# ref: https://www.highgo.ca/2021/02/03/how-to-setup-postgres-13-wal-streaming-replication-on-ubuntu-18-04/
+
+...

@@ -1,0 +1,85 @@
+---
+# pgpool
+#  - stream-replication
+#  - pgpool - recovery functionality
+#  -
+
+# 8.2.3. Installation
+# 1) all : install postgresql13-server, pgpool first
+
+# 8.2.4. Before Starting
+# 2) all ] pgsql_log, pgpool_log, archive dir 생성 : data 디렉토리는 initdb 하면서 만들어짐
+# 3) all ] set sshpass : root-postgres postgres-postgres 각 계정별 id_rsa_pgpool
+# 4) primary ] set postgresql-13.service : data-dir 박을 것
+# 5) primary ] initdb
+# 6) primary ] postgresql.conf configuration
+# 7) primary ] user create : repl, pgpool, postgres (table 8-6)
+# 8) primary ] pgpool grant pg_monitor : for replication_state
+# 9) primary ] pg_hba.conf : for 노드간 auth. pg_basebackup 하면 복제될듯
+# 10) all ] .pgpass template
+# 11) skip ] firewall : mustbe라는데 안되면 눈물 흘리며 고민해보자
+# * standby ] pg_basebackup : 문서상은 없는데....
+# 12) all ] 모든 서버 pgpool.service enabled
+# * search_primary_node_timeout 관련 설정(enabled의 경우 primary 못찾으면 fail이라)
+
+# 8.2.5. Create pgpool_node_id
+# 13) all ] pgpool_node_id 세팅. zookeeper myid 세팅 참조
+# 14) cp -p /etc/pgpool-II/pgpool.conf.sample-stream /etc/pgpool-II/pgpool.conf
+#     listen_addresses, port, sr_check_user, sr_check_password
+#     health_check_period, health_check_timeout, health_check_user, health_check_password, health_check_max_retries
+#     recovery_user, recovery_password, recovery_1st_stage_command
+#     >>>> to variable
+#     backend_hostname0, backend_port0, backend_weight0, backend_data_directory0, backend_flag0, backend_application_name0
+#     backend_hostname1, backend_port1, backend_weight1, backend_data_directory1, backend_flag1, backend_application_name1
+#     backend_hostname2, backend_port2, backend_weight2, backend_data_directory2, backend_flag2, backend_application_name2
+#     >>>> to template vi standby server count
+#     failover_command, follow_primary_command
+#     >>>> 2개면 필요없음, 3개면 값 채울것
+# 15) failover.sh, follow_primary.sh : md5 encrypted password 사용시 PCP_USER 설정
+# 16) primary ] psql template1 -c "CREATE EXTENSION pgpool_recovery"
+# 17) all ] .pgpoolkey 생성 : 패스워드?? AES Encrypted도 됨
+
+# 8.2.6.10. Watchdog Configuration
+#
+# 8.2.6.11. Logging
+#
+#
+
+
+
+
+
+
+
+# install postgresql13-server, pgpool for all first
+
+#- name: postgres user set passwd
+#  user:
+#    name: postgres
+#    password: "{{ postgres.password }}"
+#    force: true
+#    state: present
+
+#- name: check postgres key
+#  stat:
+#    path: "/root/.ssh/id_rsa_pgpool"
+#  register: file_info
+#
+#- name: sshpass template
+#  when: not file_info.stat.exists
+#  template:
+#    src: script/set-postgress-pass.sh.j2
+#    dest: /tmp/set-postgress-pass.sh
+#    mode: 700
+#
+#- name: execute sh
+#  when: not file_info.stat.exists
+#  shell: /tmp/set-postgress-pass.sh
+#
+#- name: master setting
+#  when: inventory_hostname in groups['postgres-master']
+#  import_tasks: master.yml
+
+
+
+# /data1/pgsql/13/data 이하 위치함함

@@ -10,3 +10,5 @@ COPY sshkey/id_rsa.pub /root/.ssh/id_rsa.pub
 
 RUN chmod 600 /root/.ssh/id_rsa
 RUN chmod 644 /root/.ssh/id_rsa.pub
+
+RUN yum install -y sudo

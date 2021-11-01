@@ -1,13 +1,15 @@
 icbig-01-[01:03]
 
 [postgres:children]
-postgres-master
-postgres-worker
+postgres-primary
+postgres-standby
 pgpool
 
-[postgres-master]
+[postgres-primary]
 icbig-01-01
-[postgres-worker]
+
+[postgres-standby]
 icbig-01-[02:03]
+
 [pgpool]
 icbig-01-[01:03]
