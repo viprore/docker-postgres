@@ -2,6 +2,7 @@
 # 1) install postgresql13-server
 
 # DATA dir 잡으려고
+# standby의 경우 postmaster가 실행되면 안된다.
 - name: set postgresql-13.service PGDATA
   template:
     src: daemon/postgresql-13.service.j2
