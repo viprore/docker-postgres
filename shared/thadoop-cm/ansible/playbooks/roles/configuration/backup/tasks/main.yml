@@ -1,0 +1,39 @@
+---
+- import_tasks: postgres.yml
+  when: "'postgres' in component_name"
+
+- import_tasks: hadoop.yml
+  when: "'hadoop' in component_name"
+
+- import_tasks: trino.yml
+  when: "'trino' in component_name"
+
+# backup & configuration
+# 각 롤별 configuration 부분에 해당 내용 적용
+
+#- name: hello world
+#  debug:
+#    msg:
+#      - "{{ configuration.collect_dir }}"
+#      - "{{ lookup('vars', component_name + '_conf_dir') }}"
+#      - "{{ lookup('vars', component_name + '_conf_files')|length }}"
+#      - "{{ vars['configuration'][component_name]['dir'] }}"
+#      - "{{ vars['configuration'][component_name]['files'] }}"
+
+# files가 비었으면 폴더 째로
+#- name: copy directory
+#  when: not vars['configuration'][component_name]['files']
+#  debug:
+#    msg: "copy directory"
+
+# files가 있으면 관련 파일만
+#- name: copy files
+#  when: vars['configuration'][component_name]['files']
+#  debug:
+#    msg: "{{ item }} copy files"
+#  with_items: "{{ vars['configuration'][component_name]['files'] }}"
+
+
+
+
+...

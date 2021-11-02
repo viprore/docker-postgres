@@ -1,0 +1,52 @@
+---
+# 1. backup and template
+- hosts: "{{ target_group|default(component_name|default('none')) }}"
+  tags: backup
+  roles:
+    - configuration/backup
+
+#- hosts: postgres
+#  roles:
+#    - configuration/template
+#
+#- hosts: postgres
+#  roles:
+#    - configuration/adopt
+#
+#- hosts: postgres
+#  roles:
+#    - configuration/rollback
+
+
+#0. 실행 커맨드 예시 : ansible-playbook configuration.yml -e "component_name=postgres target_group=postgres-primary"
+#1. 백업 : 지정 위치에 2개 카피(before, after)
+#2. 설정 : {{ conf_collect_dir }}/{{ component }}/after에 설정 적용
+#3. 비교 : diff -r before after 비교 후 확인
+#
+#-- 서비스 리스타트 사전 고지
+#4. 적용 :
+#	- conf_dir 제거
+#	- after 폴더 conf_dir에 적용
+#	- 기존 backup 아카이빙({component}_date_time.tar)
+#	- before rename backup
+#
+#5. 롤백 :
+#	- backup 디렉토리 확인
+#	- conf_dir 이동 to after
+#	- backup 복사 to conf_dir
+#	- backup rename before
+#
+#
+#
+#
+#! 주의
+#	- 백업 및 설정은 기존 role 설정쪽
+#	- 비교는 수작업
+#	- 적용과 롤백은 신규 role 생성
+#
+#	- 변수는 전역으로(all.yml)
+#	- arg로 role_name을 받는다(ex. hadoop, trino)
+#
+#	- 일부 task에 configuration 후 작업이 존재할 수도 있음
+#	  >> 그냥 모든 설정 템플릿하는거 configuration 롤에 넣자
+...

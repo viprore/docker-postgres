@@ -1,0 +1,12 @@
+---
+- name: trino backup start
+  debug:
+    msg:
+      - "component_name : {{ component_name }}"
+      - "target_hosts : {{ target_group|default(component_name|default('none')) }}"
+      - "collect_location : {{ config.collect_dir }}"
+      - "config_location : {{ config.trino.dir }}"
+      - "collect_unit : {{ 'directory' if not config.trino.files else 'files[' + ','.join(config.trino.files) +']' }}"
+
+
+...

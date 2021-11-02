@@ -1,0 +1,13 @@
+config:
+  collect_dir: /srv/thadoop-cm/configuration
+  postgres:
+    dir: /data1/pgsql/13/data
+    files:
+      - postgresql.conf
+      - pg_hba.conf
+  hadoop:
+    dir: /etc/hadoop/conf
+    files:
+  trino:
+    dir: /etc/trino
+    files:
