@@ -2,12 +2,6 @@
 - import_tasks: postgres.yml
   when: "'postgres' in component_name"
 
-- import_tasks: hadoop.yml
-  when: "'hadoop' in component_name"
-
-- import_tasks: trino.yml
-  when: "'trino' in component_name"
-
 # backup & configuration
 # 각 롤별 configuration 부분에 해당 내용 적용
 

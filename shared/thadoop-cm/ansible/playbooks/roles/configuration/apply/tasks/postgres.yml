@@ -1,0 +1,59 @@
+---
+# ansible-playbook configuration.yml -t apply -e "component_name=postgres target_group=postgres-primary"
+- name: postgres apply start
+  debug:
+    msg:
+      - "component_name : {{ component_name }}"
+      - "target_hosts : {{ target_group|default(component_name|default('none')) }}"
+      - "collect_location : {{ config.collect_dir }}"
+      - "config_location : {{ config.postgres.dir }}"
+      - "collect_unit : {{ '폴더' if not config.postgres.files else '파일[' + ','.join(config.postgres.files) +']' }}"
+
+
+- name: copy change directory to postgres config path
+  copy:
+    src: "{{ config.collect_dir }}/{{ config.change_path }}/postgres/"
+    dest: "{{ config.postgres.dir }}"
+    backup: yes
+
+- name: find backup
+  find:
+    path: "{{ config.postgres.dir }}"
+    file_type: file
+    use_regex: yes
+    recurse: yes
+    patterns:
+      - '^.*.[0-9]{5}.[0-9]{4}-[0-9]{2}-[0-9]{2}@[0-9]{2}:[0-9]{2}:[0-9]{2}~$'
+  register: backup_info
+
+- name: backup file to bepo_dir
+  when: backup_info.matched > 0
+  block:
+    - name: bepo files archive if exists
+      find:
+        paths: "{{ config.bepo_dir }}/postgres"
+        file_type: file
+        recurse: yes
+        excludes: "*.tar"
+      register: find_result
+    - name: bepo archive
+      when: find_result.matched > 0
+      block:
+        - archive:
+            path: "{{ config.bepo_dir }}/postgres/*"
+            dest: "{{ config.bepo_dir }}/postgres/bepo_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}.tar"
+            exclude_path: "{{ config.bepo_dir }}/postgres/*.tar"
+            remove: yes
+            format: tar
+
+    - name: make sub directory before configuration template
+      file:
+        path: "{{ config.bepo_dir + '/postgres/' + item|dirname }}"
+        state: directory
+      with_items: "{{ config.postgres.files }}"
+
+    - name: move backup
+      shell: "mv {{ item.path }} {{ config.bepo_dir + '/postgres' + (item.path|regex_replace(config.postgres.dir , '')) }}"
+      with_items: "{{ backup_info.files }}"
+
+...

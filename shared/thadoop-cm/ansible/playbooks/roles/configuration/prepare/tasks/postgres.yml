@@ -1,0 +1,49 @@
+---
+# ansible-playbook configuration.yml -t prepare -e "component_name=postgres target_group=postgres-primary"
+- name: postgres prepare start
+  debug:
+    msg:
+      - "component_name : {{ component_name }}"
+      - "target_hosts : {{ target_group|default(component_name|default('none')) }}"
+      - "collect_location : {{ config.collect_dir }}"
+      - "config_location : {{ config.postgres.dir }}"
+      - "collect_unit : {{ '폴더' if not config.postgres.files else '파일[' + ','.join(config.postgres.files) +']' }}"
+
+- name: copy config
+  block:
+    - name: create before/after directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ config.collect_dir }}/{{ config.origin_path }}/postgres"
+        - "{{ config.collect_dir }}/{{ config.change_path }}/postgres"
+
+# 타임스탬프 유지하려면 shell 커맨드로...
+    - name: copy origin/change directory
+      shell: |
+        rm -rf {{ config.collect_dir }}/{{ config.origin_path }}/postgres/*
+        rm -rf {{ config.collect_dir }}/{{ config.change_path }}/postgres/*
+        cp -r -p {{ config.postgres.dir }}/* {{ config.collect_dir }}/{{ config.origin_path }}/postgres
+        cp -r -p {{ config.postgres.dir }}/* {{ config.collect_dir }}/{{ config.change_path }}/postgres
+#      copy:
+#        src: "{{ config.postgres.dir }}/"
+#        dest: "{{ item }}"
+#        mode: preserve
+#      with_items:
+#        - "{{ config.collect_dir }}/{{ config.origin_path }}/postgres"
+#        - "{{ config.collect_dir }}/{{ config.change_path }}/postgres"
+
+- name: make sub directory before configuration template
+  file:
+    path: "{{ config.collect_dir + '/' + config.change_path + '/postgres/' + item|dirname }}"
+    state: directory
+  with_items: "{{ config.postgres.files }}"
+
+- name: postgres configuration template
+  template:
+    src: postgres/{{ item }}.j2
+    dest: "{{ config.collect_dir }}/{{ config.change_path }}/postgres/{{ item }}"
+  with_items: "{{ config.postgres.files }}"
+
+...

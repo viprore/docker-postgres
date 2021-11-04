@@ -1,0 +1,36 @@
+---
+# ansible-playbook configuration.yml -t compare -e "component_name=postgres target_group=postgres-primary"
+#- name: postgres compare start
+#  debug:
+#    msg:
+#      - "component_name : {{ component_name }}"
+#      - "target_hosts : {{ target_group|default(component_name|default('none')) }}"
+#      - "collect_location : {{ config.collect_dir }}"
+#      - "config_location : {{ config.postgres.dir }}"
+#      - "collect_unit : {{ '폴더' if not config.postgres.files else '파일[' + ','.join(config.postgres.files) +']' }}"
+
+- name: target file list extract
+  find:
+    paths: "{{ config.collect_dir }}/{{ config.change_path }}/postgres/"
+    file_type: file
+    recurse: yes
+  register: find_result
+
+#- name: debug
+#  debug:
+#    msg:
+#      - "{{ item.path }}"
+#      - "{{ config.collect_dir }}/{{ config.origin_path }}/postgres{{ item.path|regex_replace( config.collect_dir + '/' + config.change_path + '/postgres' , '') }}"
+#  with_items: "{{ find_result.files }}"
+
+- name: copy change directory to postgres config path
+  when: find_result.matched > 0
+  diff: yes
+  check_mode: yes
+  copy:
+    src: "{{ item.path }}"
+    dest: "{{ config.collect_dir }}/{{ config.origin_path }}/postgres{{ item.path|regex_replace( config.collect_dir + '/' + config.change_path + '/postgres' , '') }}"
+  with_items: "{{ find_result.files }}"
+
+
+...

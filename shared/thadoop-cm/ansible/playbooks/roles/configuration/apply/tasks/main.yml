@@ -1,0 +1,8 @@
+---
+- import_tasks: postgres.yml
+  when: "'postgres' in component_name"
+
+
+
+
+...

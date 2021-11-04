@@ -1,8 +1,12 @@
 config:
-  collect_dir: /srv/thadoop-cm/configuration
+  collect_dir: /opt/config
+  bepo_dir: /opt/config/bepo
+  origin_path: backup
+  change_path: new
   postgres:
     dir: /data1/pgsql/13/data
     files:
+      - test/postgresql.conf
       - postgresql.conf
       - pg_hba.conf
   hadoop:

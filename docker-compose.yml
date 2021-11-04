@@ -11,19 +11,31 @@ services:
       - 9999:9999
     volumes:
       - ./shared:/srv
+    networks:
+      mhadoop-network:
+        ipv4_address: 172.18.0.101
 
   icbig-01-02:
     image: viprore/cluster-base:HEAD
     hostname: icbig-01-02
     tty: true
     privileged: true
+    networks:
+      mhadoop-network:
+        ipv4_address: 172.18.0.102
 
   icbig-01-03:
     image: viprore/cluster-base:HEAD
     hostname: icbig-01-03
     tty: true
     privileged: true
+    networks:
+      mhadoop-network:
+        ipv4_address: 172.18.0.103
 
 networks:
-  default:
-    name: mhadoop-network
+  mhadoop-network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16

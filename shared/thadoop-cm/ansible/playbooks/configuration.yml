@@ -1,9 +1,21 @@
 ---
-# 1. backup and template
+# 1. Prepare(backup and template)
 - hosts: "{{ target_group|default(component_name|default('none')) }}"
-  tags: backup
+  tags: prepare
   roles:
-    - configuration/backup
+    - configuration/prepare
+
+# 2. Compare(check mode, show diff)
+- hosts: "{{ target_group|default(component_name|default('none')) }}"
+  tags: compare
+  roles:
+    - configuration/compare
+
+# 2. Apply(apply config and copy adopted files)
+- hosts: "{{ target_group|default(component_name|default('none')) }}"
+  tags: apply
+  roles:
+    - configuration/apply
 
 #- hosts: postgres
 #  roles:
