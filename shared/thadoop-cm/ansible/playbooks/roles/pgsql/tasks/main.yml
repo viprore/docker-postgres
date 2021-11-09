@@ -1,0 +1,18 @@
+---
+- name: 1. Common 세팅
+  when: "'postgresql' in group_names"
+  import_tasks: common.yml
+
+- name: 2. Master 세팅
+  when: "'postgresql-master' in group_names"
+  import_tasks: master.yml
+
+- name: 3. Slave 세팅
+  when: "'postgresql-slave' in group_names"
+  import_tasks: slave.yml
+#
+#- name: 3. pgpool-II 세팅
+#  when: "'postgresql' in group_names"
+#  import_tasks: pgpool.yml
+
+...

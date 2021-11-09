@@ -1,0 +1,48 @@
+---
+- name: postgresql-13.service PGDATA 수정
+  when: "'postgresql' in group_names"
+  template:
+    src: templates/systemd/{{ item }}.j2
+    dest: "/usr/lib/systemd/system/{{ item }}"
+  loop:
+    - postgresql-13.service
+
+- name: check data dir and initdb
+  tags: [ install ]
+  block:
+    - name: data dir check
+      find:
+        paths: "{{ postgresql.dir.data }}"
+      register: filesFound
+    - name: master init
+      when: filesFound.matched == 0
+      shell:
+        cmd: /usr/bin/postgresql-13-setup initdb
+
+- name: 5. postgresql config 수정
+  when: "'postgresql' in group_names"
+  template:
+    src: templates/data/{{ item }}.j2
+    dest: "{{ postgresql.dir.data }}/{{ item }}"
+    owner: postgres
+    group: postgres
+  loop:
+    - postgresql.conf
+    - pg_hba.conf
+
+- name: 6-1. replication 유저 생성
+  block:
+    - name: service on
+      systemd:
+        name: postgresql-13
+        state: restarted
+    - name: replication user account
+      become_user: postgres
+      become: true
+      postgresql_user:
+        name: "{{ postgresql.replication.user.name }}"
+        password: "{{ postgresql.replication.user.password }}"
+        role_attr_flags: REPLICATION
+        state: present
+
+...

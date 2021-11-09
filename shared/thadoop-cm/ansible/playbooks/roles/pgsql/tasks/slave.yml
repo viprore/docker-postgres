@@ -1,0 +1,43 @@
+---
+- name: stop postgresql-13 for base backup
+  systemd:
+    name: postgresql-13
+    state: stopped
+
+- name: check data dir and backup from primary
+  become_user: postgres
+  become: yes
+  block:
+    - name: data dir check
+      find:
+        paths: "{{ postgresql.dir.data }}"
+      register: filesFound
+
+    - name: backup standby
+      when: filesFound.matched == 0
+      shell:
+        cmd: |
+          pg_basebackup --pgdata={{ postgresql.dir.data }} --format=p --write-recovery-conf \
+              --checkpoint=fast --label=mffb --progress --verbose \
+              --slot={{ postgresql.replication.slot_name }} --create-slot \
+              --host={{ postgresql.replication.primary_host }} --port=5432 --username={{ postgresql.replication.user.name }}
+
+
+# pg_basebackup -h 10.0.3.200 -U repuser --checkpoint=fast \
+  #      -D /var/lib/pgsql/13/data/ -R --slot=some_name -C
+
+
+# pg_basebackup --pgdata={{ postgres.dir.data }} --format=p --write-recovery-conf
+# --checkpoint=fast --label=mffb --progress --verbose --host={{ groups['postgres-primary'][0] }} --port=5432 --username={{ data }}
+
+# slave
+#### postgresql.conf
+#hot_standby = on
+
+#### recover.conf
+#recovery_target_timeline = 'latest'
+#standby_mode = on
+#primary_conninfo = 'host=icbigloc-01-01 port=5432 user=replication password=replica'
+#restore_command = 'cp /var/lib/edb/as9.6/archive/%f %p'
+
+...
