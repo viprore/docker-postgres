@@ -1,0 +1,6 @@
+{% for server in groups['postgresql'] %}
+{{ server }}:5432:replication:{{ postgresql.replication.user.name }}:{{ postgresql.replication.user.password }}
+{% endfor %}
+{% for server in groups['postgresql'] %}
+{{ server }}:5432:postgres:{{ pgpool.users.recovery.name }}:{{ pgpool.users.recovery.password }}
+{% endfor %}

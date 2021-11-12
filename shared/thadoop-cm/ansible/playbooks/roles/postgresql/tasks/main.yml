@@ -10,9 +10,9 @@
 - name: 3. Slave 세팅
   when: "'postgresql-slave' in group_names"
   import_tasks: slave.yml
-#
-#- name: 3. pgpool-II 세팅
-#  when: "'postgresql' in group_names"
-#  import_tasks: pgpool.yml
+
+- name: 4. pgpool-II 세팅
+  when: "'postgresql' in group_names"
+  import_tasks: pgpool.yml
 
 ...

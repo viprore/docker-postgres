@@ -1,0 +1,91 @@
+---
+- name: postgresql13-server 설치
+  yum:
+    state: present
+    name:
+      - postgresql13-server-13.4-1PGDG.rhel7.x86_64
+      - python-psycopg2
+      - sshpass
+  tags: [ install ]
+
+- name: postgresql data dir 생성
+  tags: [ install ]
+  file:
+    path: "{{ postgresql.dir.data }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: postgresql log dir 생성
+  tags: [ install ]
+  file:
+    path: "{{ postgresql.dir.log }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0755'
+
+- name: postgresql archive dir 생성
+  tags: [ install ]
+  file:
+    path: "{{ postgresql.dir.archive }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: disabled postgresql-13 service
+  systemd:
+    name: postgresql-13
+    enabled: no
+
+- name: postgresql-13.service PGDATA 수정
+  template:
+    src: templates/systemd/{{ item }}.j2
+    dest: "/usr/lib/systemd/system/{{ item }}"
+  loop:
+    - postgresql-13.service
+
+- name: postgres password change
+  user:
+    name: postgres
+    update_password: always
+    password: "{{ pgpool.users.recovery.password|password_hash('sha512') }}"
+
+- name: ssh pass for root to postgres
+  block:
+    - name: key gen
+      shell:
+        chdir: ~/.ssh
+        cmd: ssh-keygen -t rsa -f id_rsa_pgpool -N ''
+    - name: sshpass root to postgres
+      shell:
+         chdir: ~/.ssh
+         cmd: sshpass -p {{ pgpool.users.recovery.password }} ssh-copy-id -i id_rsa_pgpool.pub {{ pgpool.users.recovery.name }}@{{ item }}
+      with_items: "{{ groups['postgresql'] }}"
+
+- name: ssh pass for postgres to postgres
+  become: yes
+  become_user: postgres
+  block:
+    - name: key gen
+      shell:
+        chdir: ~/.ssh
+        cmd: ssh-keygen -t rsa -f id_rsa_pgpool -N ''
+    - name: sshpass root to postgres
+      shell:
+        chdir: ~/.ssh
+        cmd: sshpass -p {{ pgpool.users.recovery.password }} ssh-copy-id -i id_rsa_pgpool.pub {{ pgpool.users.recovery.name }}@{{ item }}
+      with_items: "{{ groups['postgresql'] }}"
+
+- name: pgpass
+  become_user: postgres
+  template:
+    src: templates/pgsql/.pgpass.j2
+    dest: "~/.pgpass"
+    owner: postgres
+    group: postgres
+    mode: "600"
+
+...

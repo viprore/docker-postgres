@@ -1,0 +1,73 @@
+---
+- name: pgpool-II 설치
+  yum:
+    state: present
+    name:
+      - pgpool-II-pg13-*
+  tags: [ install ]
+
+- name: pgppol config
+  template:
+    src: templates/{{ item }}.j2
+    dest: "/etc/pgpool-II/{{ item }}"
+    mode: "600"
+  with_items:
+    - pgpool.conf
+    - pool_hba.conf
+
+- name: pgpool_node_id file create
+  copy:
+    content: "0"
+    dest: /etc/pgpool-II/pgpool_node_id
+    group: postgres
+    owner: postgres
+    mode: "0600"
+
+- name: pgpool_node_id set
+  lineinfile:
+    path: /etc/pgpool-II/pgpool_node_id
+    regexp: '^[0-9]+$'
+    line: "{{ (groups['pgpool'].index(inventory_hostname)+1)|string }}"
+    backrefs: yes
+
+- name: pgpool password encrypt and write pcp.conf
+  shell: echo 'pgpool:'`pg_md5 PCP passowrd` >> /etc/pgpool-II/pcp.conf
+
+
+- name: pcppass
+  template:
+    src: templates/pgpool/.pcppass.j2
+    dest: "~/.pcppass"
+    owner: postgres
+    group: postgres
+    mode: "600"
+
+- name: some template
+  template:
+    src: "templates/pgpool{{ item }}.j2"
+    dest: "{{ postgresql.dir.data }}{{ item }}"
+    owner: postgres
+    group: postgres
+  with_items:
+    - recovery_1st_stage
+    - pgpool_remote_start
+
+- name: function recovery on
+  become_user: postgres
+  shell: psql template1 -c "CREATE EXTENSION pgpool_recovery"
+
+- name: pgpoolkey
+  template:
+    src: templates/pgpool/.pcppass.j2
+    dest: "~/.pcppass"
+    owner: postgres
+    group: postgres
+    mode: "600"
+
+- name: encrypted password
+  become_user: postgres
+  shell: |
+    echo "{{ pgpool.users.pgpool.password }}" | pg_enc -m -k ~/.pgpoolkey -u {{ pgpool.users.pgpool.name }} -p
+    echo "{{ pgpool.users.recovery.password }}" | pg_enc -m -k ~/.pgpoolkey -u {{ pgpool.users.recovery.name }} -p
+
+...

@@ -5,8 +5,8 @@
     state: stopped
 
 - name: check data dir and backup from primary
-  become_user: postgres
   become: yes
+  become_user: postgres
   block:
     - name: data dir check
       find:
@@ -17,10 +17,15 @@
       when: filesFound.matched == 0
       shell:
         cmd: |
-          pg_basebackup --pgdata={{ postgresql.dir.data }} --format=p --write-recovery-conf \
+          echo '{{ postgresql.replication.user.password }}' | pg_basebackup --pgdata={{ postgresql.dir.data }} --format=p --write-recovery-conf \
               --checkpoint=fast --label=mffb --progress --verbose \
               --slot={{ postgresql.replication.slot_name }} --create-slot \
               --host={{ postgresql.replication.primary_host }} --port=5432 --username={{ postgresql.replication.user.name }}
+
+- name: 7. slave에서 백업 받도록 service on
+  systemd:
+    name: postgresql-13
+    state: started
 
 
 # pg_basebackup -h 10.0.3.200 -U repuser --checkpoint=fast \
